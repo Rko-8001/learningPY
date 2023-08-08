@@ -1,16 +1,41 @@
 from random import choice
+import requests
 
+def fetchRandomWord():
+    tries = 10
+    while tries > 0:
+        response = requests.get(f"https://random-word-api.herokuapp.com/word")
+        if response.status_code == 200:
+            return response.json()[0]  
+        else:
+            tries -= 1
+    return ""
+
+def fetchMeaningofWord(word):
+    response = requests.get(f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}")
+    if response.status_code == 200:
+        return response.json()[0]['meanings'][0]['definitions'][0]['definition']
+    else:
+        return ""
+    
 def start_game():
-    word: str = choice(['python', 'java', 'kotlin', 'javascript'])
+    word = fetchRandomWord()
+    meaning = "It's a programming language."
+    if word == "":
+        word: str = choice(['python', 'java', 'kotlin', 'javascript'])
+    else: 
+        meaning = fetchMeaningofWord(word)
 
     print(f'Welcome to the game, Hooman')
-
     guessed: str = '-' * len(word)
     tries: int = 8
     
     while tries > 0:
         print()
-        print("Hoomna, you have", tries, "tries")
+        print("Hooman, you have", tries, "tries")
+        if(tries < 5): 
+            print()
+            print("Here's the hint: ", meaning)
         print()
         
         blanks: int = 0
@@ -41,6 +66,7 @@ def start_game():
             tries -= 1
             if tries == 0:
                 print('Hooman, you killed a innocent. Remember it')
+                print("\nWord was: ", word)
                 break
         
 
